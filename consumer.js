@@ -1,7 +1,9 @@
 const kafka = require("./client");
 
+const group = process.argv[2];
+
 async function init() {
-  const consumer = kafka.consumer({ groupId: "rider-1" });
+  const consumer = kafka.consumer({ groupId: group });
   await consumer.connect();
   await consumer.subscribe({ topics: ["rider_updates"], fromBeginning: true });
   await consumer.run({
@@ -12,6 +14,7 @@ async function init() {
         headers: message.headers,
         topic,
         partition,
+        group,
       });
     },
   });

@@ -185,3 +185,19 @@ Setting it to 1 means each partition has only 1 copy (no replicas). If replicas 
 - admin - infrastructure setup (topics, partitions setup)
 - producer - message produced  
 - consumer - message consumed
+
+### summary
+A Kafka cluster is one or more servers working together, making it one unit. Each server is called a broker. A broker is responsible for receiving messages from producers, storing them safely, and serving them to consumers. So brokers actually manage most things: message receiving, storage, message sending, partitions, topics, replication - but there's also ZooKeeper (or KRaft in newer versions) that handles cluster coordination and leader elections.
+
+Replication happens at the partition level. Each partition gets copied to multiple brokers as leader or follower replicas. If the leader replica on one broker fails, then a follower that exists on a different broker takes over and automatically becomes the new leader. So the partition data is safe and available even if a whole broker fails.
+
+That's the key - since each partition has replicas spread across different brokers, losing one broker doesn't mean losing the data. The other brokers still have the follower replicas that can step up as leaders.
+
+Consumer = Application that reads data from Kafka Producer = Application that writes data to Kafka
+
+Each message within partitions is assigned a unique offset, which is a sequential number that identifies its position in the partition. Offsets help consumers keep track of which messages they have already processed. Kafka stores these messages to disk.
+
+Messages are stored in the order they arrive within each partition (ordering is only guaranteed within a single partition, not across different partitions). Kafka keeps these messages for a configurable retention policy, which could be some time interval or disk space. Consumers subscribe to topics and read messages sequentially from assigned partitions, using offsets to track their progress. By committing these offsets (which get stored back to Kafka in a special topic called __consumer_offsets), each consumer ensures they know exactly which messages they've processed, allowing them to pick up where they left off in case of a restart.
+
+So like if msg1 is processed, committing means tick that msg - ok msg1 done, go to msg2.
+
