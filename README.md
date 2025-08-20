@@ -123,3 +123,21 @@ To solve scaling limitations, we have consumer groups. When we create a consumer
 - If 4 partitions and 2 groups with 1 consumer each → each group's consumer gets all 4 partitions
 - If Group 1 adds 1 more consumer → 2 partitions go to Group 1 Consumer 1, 2 partitions go to Group 1 Consumer 2
 - Group 2's consumer still gets all 4 partitions
+
+## Why This Architecture is Beneficial
+
+With this architecture, Kafka can implement both **Queue** and **Pub/Sub** patterns:
+
+### Queue Pattern (1 Producer → 1 Consumer)
+- Even if Multiple consumers attached, but msg1 picked by consumer1 means msg1 cannot be picked by consumer2 (deleted from queue)
+- **Implementation in Kafka:** 4 partitions + 1 group + 4 consumers
+- Each partition belongs to 1 consumer
+- If msg1 comes to partition1 → only the consumer assigned to partition1 gets msg1, other 3 don't
+
+**Best Practice:** Make number of partitions = number of consumers
+
+### Pub/Sub Pattern (1 Publisher → Multiple Listeners)
+- Same message can be listened to by multiple consumers
+- **Implementation in Kafka:** 4 partitions + 4 groups + 1 consumer per group
+- If msg1 comes to partition1 → msg1 goes to all consumers since all 4 partitions belong to all 4 groups
+- Inside each group there's 1 consumer → pub/sub architecture achieved
