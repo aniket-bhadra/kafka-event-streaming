@@ -141,3 +141,16 @@ With this architecture, Kafka can implement both **Queue** and **Pub/Sub** patte
 - **Implementation in Kafka:** 4 partitions + 4 groups + 1 consumer per group
 - If msg1 comes to partition1 → msg1 goes to all consumers since all 4 partitions belong to all 4 groups
 - Inside each group there's 1 consumer → pub/sub architecture achieved
+
+## Why Kafka Has Such High Throughput?
+
+Kafka achieves high throughput through:
+
+1.  **Sequential I/O Operations**: It writes data sequentially to disk, which is much faster than random access.
+
+2.  **Zero-Copy Data Transfer**: When a consumer requests data, Kafka bypasses the server's RAM. It reads the data directly from the disk and sends it to the network, eliminating unnecessary copy steps.
+
+3.  **Batch Processing**: Instead of processing single messages, Kafka efficiently groups them into larger batches for both reading and writing, reducing the overhead of network calls.
+
+4.  **Distributed Architecture**: Kafka scales across multiple servers. The load is distributed, preventing any single server from becoming a bottleneck. Data is further split into partitions to allow multiple consumers to process different parts of the data at the same time (parallelism). **For example: one consumer consumes one partition, while another consumer consumes a different partition at the same time.** This is why Kafka is so powerful.
+
