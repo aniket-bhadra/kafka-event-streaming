@@ -59,10 +59,6 @@ These services take data from Kafka, perform calculations, send to clients, and 
 
 Clients can also consume directly from Kafka - either clients take data from Kafka and show to users, or backend servers take data from Kafka and send to clients before storing in database. Both approaches work.
 
-Broker = Kafka server that stores data (like a database server)
-Consumer = Application that reads data from Kafka
-Producer = Application that writes data to Kafka
-
 ## Kafka Architecture
 
 ### Topics
@@ -154,3 +150,38 @@ Kafka achieves high throughput through:
 
 4.  **Distributed Architecture**: Kafka scales across multiple servers. The load is distributed, preventing any single server from becoming a bottleneck. Data is further split into partitions to allow multiple consumers to process different parts of the data at the same time (parallelism). **For example: one consumer consumes one partition, while another consumer consumes a different partition at the same time.** This is why Kafka is so powerful.
 
+Kafka brokers handle all message operations (topics, partitions, replication), while ZooKeeper in Kafka 2.6.x and below only tracks brokers and stores configuration data—that's why ZooKeeper starts first. confluentinc/cp-kafka creates the broker, so use confluentinc/cp-zookeeper with confluentinc/cp-kafka since they're designed to work together, unlike the plain zookeeper image which isn't optimized for Kafka.
+
+```bash
+docker run -d --name zookeeper -p 2181:2181 -e ZOOKEEPER_CLIENT_PORT=2181 -e ZOOKEEPER_TICK_TIME=2000 confluentinc/cp-zookeeper:6.2.10
+```
+
+ZOOKEEPER_TICK_TIME=2000 means every 2 seconds it checks connections and sessions using this timing.
+
+Then run Kafka:
+```bash
+docker run --name kafka -p 9092:9092 -e KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181 -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 --link zookeeper confluentinc/cp-kafka:6.2.10
+```
+
+KAFKA_ZOOKEEPER_CONNECT tells this Kafka where ZooKeeper is running:
+- `<pc's private ip>:2181` or
+- `<containerName>:2181`
+
+Docker's internal DNS resolves it automatically.
+
+IP is required when connecting from outside Docker (like Node.js app on your host).
+
+KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 specifies where Kafka is actually running.
+
+PLAINTEXT in Kafka is not HTTP. It's Kafka's own protocol over TCP, used for producers and consumers to talk to brokers. PLAINTEXT just means unencrypted, no SSL. So it's a TCP-based messaging protocol, not HTTP.
+
+HTTP runs on top of TCP, but it is a different protocol with request/response semantics. Kafka's PLAINTEXT protocol is also TCP-based but uses its own binary message format.
+
+KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR controls how many replicas of each partition exist. If you have 1 broker → set to 1, if multiple brokers then 3 is safe.
+
+Setting it to 1 means each partition has only 1 copy (no replicas). If replicas existed, they would exist on different brokers. Since there are no replicas here, it means only 1 broker. If this single broker goes down, the partition data is unavailable.
+
+### KafkaJS
+- admin - infrastructure setup (topics, partitions setup)
+- producer - message produced  
+- consumer - message consumed
