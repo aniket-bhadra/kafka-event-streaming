@@ -201,3 +201,31 @@ Messages are stored in the order they arrive within each partition (ordering is 
 
 So like if msg1 is processed, committing means tick that msg - ok msg1 done, go to msg2.
 
+### Push-based vs pull-based = how consumers get data.
+
+#### Push-based (Pub/Sub style):
+
+- Broker/server sends data directly to consumers as soon as it arrives.
+- Example: WebSockets, Firebase, Redis Pub/Sub.
+- Consumer is passive.
+
+#### Pull-based (Kafka):
+
+Broker stores data.
+Consumer must request (poll) for new records.
+Consumer controls pace, offset, backpressure.
+Broker never pushes automatically.
+
+Kafka is pull-based. Libraries just hide the polling loop, so it feels push-like.
+
+in consumer.js 
+ consumer.run(...) starts an infinite loop.
+ Inside, the library continuously calls poll on the broker.
+ When records arrive, it invokes your eachMessage callback.
+So it looks like pub/sub because you only wrote a callback.
+Client libs like KafkaJS make it look push-based by running the poll loop internally.
+
+so, When you subscribe() in KafkaJS and call consumer.run(), the library:
+Joins the consumer group.
+Starts a background loop.
+That loop continuously polls the broker for messages on the subscribed topic(s)
