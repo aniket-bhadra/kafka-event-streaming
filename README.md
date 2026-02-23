@@ -1,5 +1,30 @@
 # Apache Kafka: High Throughput Event Streaming Platform
 
+## Table of Contents
+1. [What is Throughput?](#what-is-throughput)
+2. [Why Kafka?](#why-kafka)
+   - [Key Differences: Kafka vs Regular Databases](#key-differences-kafka-vs-regular-databases)
+   - [Why Use Both Together?](#why-use-both-together)
+3. [Kafka Architecture](#kafka-architecture)
+   - [Topics](#topics)
+   - [Partitions](#partitions)
+   - [Consumer Load Balancing](#consumer-load-balancing)
+4. [Consumer Groups](#consumer-groups)
+   - [Auto-balancing Logic](#auto-balancing-logic)
+5. [Queue vs Pub/Sub Patterns](#why-this-architecture-is-beneficial)
+   - [Queue Pattern](#queue-pattern-1-producer--1-consumer)
+   - [Pub/Sub Pattern](#pubsub-pattern-1-publisher--multiple-listeners)
+6. [Why Kafka Has Such High Throughput?](#why-kafka-has-such-high-throughput)
+7. [Kafka Setup with Docker](#why-kafka-has-such-high-throughput)
+   - [ZooKeeper & Kafka Commands](#why-kafka-has-such-high-throughput)
+   - [KafkaJS](#kafkajs)
+8. [Kafka Summary](#summary)
+   - [Brokers & Replication](#summary)
+   - [Offsets & Message Ordering](#summary)
+   - [Push-based vs Pull-based](#push-based-vs-pull-based--how-consumers-get-data)
+
+---
+
 ## What is Throughput?
 Throughput = number of operations completed per unit of time.
 
